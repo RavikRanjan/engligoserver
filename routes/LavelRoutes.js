@@ -52,6 +52,7 @@ router.put("/:_id", async (req, res) => {
     if (data) {
       data.lavelname = req.body.lavelname ?? data.lavelname
       data.subject = req.body.subject ?? data.subject
+      data.topicname = req.body.topicname ?? data.topicname
       await data.save()
       res.send({ result: "Done", message: "Record is Updated!!!" })
     }
@@ -79,3 +80,4 @@ router.delete("/:_id", async (req, res) => {
 })
 
 module.exports = router;
+
