@@ -8,7 +8,7 @@ router.post('/', async (req, res) => {
   try {
     const { subject, lavelname } = req.body;
 
-    const newLavel = new Lavel({ subject, lavelname });
+    const newLavel = new Lavel({ subject, lavelname, topicname });
     await newLavel.save();
 
     res.status(201).json({ message: "Lavel created successfully", data: newLavel });
@@ -80,4 +80,5 @@ router.delete("/:_id", async (req, res) => {
 })
 
 module.exports = router;
+
 
