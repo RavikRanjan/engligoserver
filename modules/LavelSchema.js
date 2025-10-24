@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const lavelSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   lavelname: { type: String, required: true },
+  topicname: { type: String, required: true },
 }, {
   timestamps: true
 });
@@ -15,3 +16,4 @@ lavelSchema.index(
 );
 
 module.exports = mongoose.model("Level", lavelSchema);
+
