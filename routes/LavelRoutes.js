@@ -6,7 +6,7 @@ const Lavel = require("../modules/LavelSchema");
 // for add level
 router.post('/', async (req, res) => {
   try {
-    const { subject, lavelname } = req.body;
+    const { subject, lavelname, topicname } = req.body;
 
     const newLavel = new Lavel({ subject, lavelname, topicname });
     await newLavel.save();
@@ -80,5 +80,6 @@ router.delete("/:_id", async (req, res) => {
 })
 
 module.exports = router;
+
 
 
