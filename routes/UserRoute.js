@@ -7,8 +7,26 @@ const jwt = require("jsonwebtoken")
 const passwordValidator = require("password-validator")
 
 const nodemailer = require("nodemailer")
-const upload = require("../middleware/multerConfig");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Set up Multer storage for Cloudinary
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "uploads",
+        resource_type: "auto",
+    },
+});
+
+const upload = multer({ storage });
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -133,26 +151,9 @@ router.put("/:_id", upload.single("pic"), async (req, res) => {
     user.otp = req.body.otp ?? user.otp;
     user.role = req.body.role ?? user.role;
     user.status = req.body.status ?? user.status;
-
-    // ✅ Cloudinary upload if new file is provided
     if (req.file) {
-      const uploadedImage = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          { folder: "users" }, // Cloudinary folder name
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        ).end(req.file.buffer);
-      });
-
-      user.pic = uploadedImage.secure_url; // Cloudinary URL
-    }
-    // ✅ If no file but pic URL is provided
-    else if (req.body.pic) {
-      user.pic = req.body.pic;
-    }
-
+            user.pic = req.file.path || req.file.secure_url || '';
+        }
     await user.save();
     res.status(200).json({
       result: "Done",
@@ -379,5 +380,6 @@ router.post("/search", async (req, res) => {
         res.status(500).send({ result: "Fail", message: "Internal Server Error!!!" })
     }
 })
+
 
 module.exports = router
