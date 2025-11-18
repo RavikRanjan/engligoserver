@@ -65,18 +65,14 @@ const userSchema = new mongoose.Schema({
     fileUrl: String,
 })
 userSchema.pre("save", async function (next) {
-    if (this.studentId) {
-        return next();
-    }
+
+    if (!this.isModified("class")) return next();
+
     let category = "";
 
-    if (this.class === "Graduation") {
-        category = "GR";
-    } else if (!isNaN(this.class) && this.class !== "") {
-        category = `C${this.class}`;
-    } else {
-        category = "C0"; 
-    }
+    if (this.class === "Graduation") category = "GR";
+    else if (!isNaN(this.class) && this.class !== "") category = `C${this.class}`;
+    else category = "C0";
 
     const counter = await StudentCounter.findOneAndUpdate(
         { category },
@@ -85,11 +81,14 @@ userSchema.pre("save", async function (next) {
     );
 
     const number = counter.seq.toString().padStart(5, "0");
-
     this.studentId = `${category}-${number}`;
+
+    console.log(" Updated Student ID:", this.studentId);
 
     next();
 });
+
 const User = new mongoose.model("User", userSchema)
 
 module.exports = User
+
