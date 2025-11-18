@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 const validator = require("validator")
-
+const StudentCounter = require("./studentCounter");
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -31,6 +31,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+     studentId: {
+        type: String,
+        default: ""
+    },
+    studentId: {
+        type: String,
+        unique: true
+    },
     pic: {
         type: String,
         default: ""
@@ -56,7 +64,32 @@ const userSchema = new mongoose.Schema({
     fileType: String,
     fileUrl: String,
 })
+userSchema.pre("save", async function (next) {
+    if (this.studentId) {
+        return next();
+    }
+    let category = "";
 
+    if (this.class === "Graduation") {
+        category = "GR";
+    } else if (!isNaN(this.class) && this.class !== "") {
+        category = `C${this.class}`;
+    } else {
+        category = "C0"; 
+    }
+
+    const counter = await StudentCounter.findOneAndUpdate(
+        { category },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+
+    const number = counter.seq.toString().padStart(5, "0");
+
+    this.studentId = `${category}-${number}`;
+
+    next();
+});
 const User = new mongoose.model("User", userSchema)
 
 module.exports = User
